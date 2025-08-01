@@ -2,6 +2,7 @@ package com.samridhi.vitalstrackerapp.presentation.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,14 +39,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.samridhi.vitalstrackerapp.R
 import com.samridhi.vitalstrackerapp.alias.AppDrawable
 import com.samridhi.vitalstrackerapp.alias.AppString
+import com.samridhi.vitalstrackerapp.presentation.common.VitalsTextField
 import com.samridhi.vitalstrackerapp.ui.theme.ht1
 import com.samridhi.vitalstrackerapp.ui.theme.ht2
 import com.samridhi.vitalstrackerapp.ui.theme.lightPurple
@@ -58,7 +62,9 @@ import com.samridhi.vitalstrackerapp.ui.theme.purple8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: HomeScreenViewModel = hiltViewModel(),
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -83,7 +89,11 @@ fun HomeScreen() {
             ) {
                 Spacer(modifier = Modifier.size(4.dp))
                 Icon(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            viewModel.onEvent(HomeScreenUIEvent.OnAddButton)
+                        },
                     tint = purple,
                     painter = painterResource(id = AppDrawable.plus_icon),
                     contentDescription = ""
@@ -93,19 +103,20 @@ fun HomeScreen() {
     ) { innerPadding ->
         HomeScreenContent(
             modifier = Modifier.padding(innerPadding),
+            uiState = viewModel.uiState,
         )
     }
 
-  var showDialog by remember {
-      mutableStateOf(false)
-  }
-    AnimatedVisibility(showDialog) {
+    AnimatedVisibility(viewModel.uiState.showDialog) {
         GenericDialog(
             onDismissRequest = {
-               showDialog = false
+                viewModel.onEvent(HomeScreenUIEvent.OnDismissDialog)
             },
             content = {
-                AddVitalsDialog()
+                AddVitalsDialog(
+                    uiState = viewModel.uiState,
+                    onEvent = viewModel::onEvent
+                )
             }
         )
     }
@@ -115,6 +126,7 @@ fun HomeScreen() {
 @Composable
 fun HomeScreenContent(
     modifier: Modifier,
+    uiState: HomeScreenUiState,
 ) {
     LazyColumn(
         modifier = modifier
@@ -241,7 +253,10 @@ fun GenericDialog(
 
 
 @Composable
-fun AddVitalsDialog() {
+fun AddVitalsDialog(
+    uiState: HomeScreenUiState,
+    onEvent: (HomeScreenUIEvent) -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -260,38 +275,44 @@ fun AddVitalsDialog() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Sys BP") },
+                VitalsTextField(
+                    textFieldValue = uiState.heartRate,
+                    onValueChange = {
+                        onEvent(HomeScreenUIEvent.OnHeartRateChange(it))
+                    },
+                    label = "Sys BP",
                     modifier = Modifier.weight(1f)
                 )
-                TextField(
-                    value = "",
-                    onValueChange = {},
-                    label = { Text("Dia BP") },
+                VitalsTextField(
+                    textFieldValue = uiState.bloodPressure,
+                    onValueChange = {
+                        onEvent(HomeScreenUIEvent.OnSysBpChange(it))
+                    },
+                    label = "Dia BP",
                     modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Weight ( in kg )") },
+            VitalsTextField(
+                textFieldValue = uiState.weight,
+                onValueChange = {
+                    onEvent(HomeScreenUIEvent.OnWeightChange(it))
+                },
+                label = "Weight (in kg)",
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
-            TextField(
-                value = "",
-                onValueChange = {},
-                label = { Text("Baby Kicks") },
+            VitalsTextField(
+                textFieldValue = uiState.babyKicks,
+                onValueChange = {
+                    onEvent(HomeScreenUIEvent.OnBabyKicksChange(it))
+                },
+                label = "Baby Kicks",
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(modifier = Modifier.size(40.dp))
             Button(
                 content = {
@@ -345,6 +366,7 @@ fun Preview() {
     ) { innerPadding ->
         HomeScreenContent(
             modifier = Modifier.padding(innerPadding),
+            uiState = HomeScreenUiState(),
         )
     }
 }
@@ -355,7 +377,7 @@ fun Preview2() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        HealthStats()
+        //  HealthStats(vitals: VitalsLog)
     }
 }
 
@@ -365,6 +387,6 @@ fun Preview3() {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        AddVitalsDialog()
+        // AddVitalsDialog()
     }
 }
