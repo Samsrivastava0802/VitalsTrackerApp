@@ -3,4 +3,8 @@
     <string name="track_my_pregnancy">Track My Pregnancy</string>
     <string name="ninety_bpm">90 bpm</string>
     <string name="mon_13_jan_2025_03_45_pm">Mon, 13 Jan 2025 03:45 pm</string>
+    <string name="bpm">%1$s bpm</string>
+    <string name="mmhg">%1$s mmHg</string>
+    <string name="kicks">%1$s kicks</string>
+    <string name="kg">%1$s kg</string>
 </resources>

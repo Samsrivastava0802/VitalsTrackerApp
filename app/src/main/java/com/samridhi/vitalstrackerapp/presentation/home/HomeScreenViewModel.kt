@@ -10,9 +10,6 @@ import com.samridhi.vitalstrackerapp.domain.GetAllVitalsUseCase
 import com.samridhi.vitalstrackerapp.domain.InsertVitalsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,7 +61,7 @@ class HomeScreenViewModel @Inject constructor(
                         bloodPressure = uiState.bloodPressure.text,
                         babyKicks = uiState.babyKicks.text,
                         weight = uiState.weight.text,
-                        timeStamp = getCurrentFormattedTime()
+                        timeStamp = uiState.timeStamp
                     ),
                     heartRate = TextFieldValue(),
                     bloodPressure = TextFieldValue(),
@@ -94,12 +91,6 @@ class HomeScreenViewModel @Inject constructor(
                 uiState = uiState.copy(showDialog = false)
             }
         }
-    }
-
-    private fun getCurrentFormattedTime(): String {
-        val date = Date()
-        val formatter = SimpleDateFormat("EEE, dd MMM yyyy hh:mm a", Locale.getDefault())
-        return formatter.format(date)
     }
 }
 

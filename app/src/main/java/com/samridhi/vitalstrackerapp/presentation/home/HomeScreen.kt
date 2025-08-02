@@ -65,6 +65,7 @@ import com.samridhi.vitalstrackerapp.ui.theme.purple5
 import com.samridhi.vitalstrackerapp.ui.theme.purple6
 import com.samridhi.vitalstrackerapp.ui.theme.purple7
 import com.samridhi.vitalstrackerapp.ui.theme.purple8
+import com.samridhi.vitalstrackerapp.util.TimeUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,14 +105,13 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .wrapContentSize()
-                    .background(shape = RoundedCornerShape(20.dp), color = lightPurple)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Spacer(modifier = Modifier.size(4.dp))
                 Icon(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(34.dp)
                         .clickable {
                             viewModel.onEvent(HomeScreenUIEvent.OnAddButton)
                         },
@@ -153,7 +153,8 @@ fun HomeScreenContent(
         modifier = modifier
     ) {
         items(uiState.vitalsList) {
-            HealthStats(data = it)
+            HealthStats(data = it,
+                createdAt = it.timeStamp)
         }
     }
 }
@@ -161,6 +162,7 @@ fun HomeScreenContent(
 @Composable
 fun HealthStats(
     data: VitalsLog,
+    createdAt: String
 ) {
     Column(
         modifier = Modifier
@@ -183,12 +185,11 @@ fun HealthStats(
                 Icon(
                     painter = painterResource(AppDrawable.heart_rate),
                     contentDescription = "Heart rate icon",
-                    tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "${data.heartRate} bpm",
+                    text = stringResource(AppString.bpm, data.heartRate),
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -202,7 +203,7 @@ fun HealthStats(
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "${data.bloodPressure} mmHg",
+                    text = stringResource(AppString.mmhg, data.bloodPressure),
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -227,7 +228,7 @@ fun HealthStats(
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "${data.weight} kg",
+                    text = stringResource(AppString.kg, data.weight),
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -239,12 +240,11 @@ fun HealthStats(
                 Icon(
                     painter = painterResource(AppDrawable.newborn),
                     contentDescription = "Baby kicks icon",
-                    tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "${data.babyKicks} kicks",
+                    text = stringResource(AppString.kicks, data.babyKicks),
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -254,10 +254,10 @@ fun HealthStats(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = purple6),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.BottomEnd
         ) {
             Text(
-                text = data.timeStamp,
+                text = TimeUtil.convertMillisToDate(createdAt),
                 color = Color.White
             )
         }
@@ -419,7 +419,8 @@ fun Preview2() {
                 weight = "60",
                 babyKicks = "5",
                 timeStamp = "2025-08-01 10:00 AM"
-            )
+            ),
+            createdAt = ""
         )
         HealthStats(
             data = VitalsLog(
@@ -428,7 +429,8 @@ fun Preview2() {
                 weight = "61",
                 babyKicks = "6",
                 timeStamp = "2025-08-01 02:30 PM"
-            )
+            ),
+            createdAt = ""
         )
         HealthStats(
             data = VitalsLog(
@@ -437,7 +439,8 @@ fun Preview2() {
                 weight = "59.8",
                 babyKicks = "4",
                 timeStamp = "2025-07-31 09:45 AM"
-            )
+            ),
+            createdAt = ""
         )
         HealthStats(
             data = VitalsLog(
@@ -446,7 +449,8 @@ fun Preview2() {
                 weight = "60.5",
                 babyKicks = "7",
                 timeStamp = "2025-07-30 06:20 PM"
-            )
+            ),
+            createdAt = ""
         )
         HealthStats(
             data = VitalsLog(
@@ -455,7 +459,8 @@ fun Preview2() {
                 weight = "60.2",
                 babyKicks = "6",
                 timeStamp = "2025-07-29 11:00 AM"
-            )
+            ),
+            createdAt = ""
         )
     }
 }

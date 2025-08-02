@@ -1,5 +1,6 @@
 package com.samridhi.vitalstrackerapp.data.network
 
+
 data class VitalsDataTracking(
     val id: String = "",
     val heartBp : String = "",
