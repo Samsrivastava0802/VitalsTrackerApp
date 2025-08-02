@@ -11,10 +11,12 @@ composeBom = "2024.09.00"
 retrofitVersion = "2.11.0"
 hiltNavigationComposeVersion = "1.0.0"
 hiltWorkVersion = "1.0.0"
-workRuntimeVersion = "2.7.1"
+workRuntimeVersion = "2.10.0"
 hiltVersion = "2.48"
 navVersion = "2.7.7"
 accompanistVersion = "0.32.0"
+roomCommonJvmVersion = "2.7.2"
+firebaseDatabaseKtxVersion = "22.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +43,8 @@ dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", vers
 dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltVersion" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navVersion" }
 accompanist-navigation-material = { group = "com.google.accompanist", name = "accompanist-navigation-material", version.ref = "accompanistVersion" }
+androidx-room-common-jvm = { group = "androidx.room", name = "room-common-jvm", version.ref = "roomCommonJvmVersion" }
+firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabaseKtxVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

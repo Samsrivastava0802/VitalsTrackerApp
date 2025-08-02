@@ -5,14 +5,42 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.samridhi.vitalstrackerapp.domain.GetAllVitalsUseCase
+import com.samridhi.vitalstrackerapp.domain.InsertVitalsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor() : ViewModel() {
+class HomeScreenViewModel @Inject constructor(
+    private val insertVitalsUseCase: InsertVitalsUseCase,
+    private val getAllVitalsUseCase: GetAllVitalsUseCase,
+) : ViewModel() {
 
     var uiState by mutableStateOf(HomeScreenUiState())
         private set
+
+    init {
+        getVitals()
+    }
+
+    private fun getVitals() {
+        viewModelScope.launch {
+            uiState = uiState.copy(vitalsList = getAllVitalsUseCase().map {
+                VitalsLog(
+                    heartRate = it.heartRate,
+                    bloodPressure = it.bloodPressure,
+                    babyKicks = it.babyKicks,
+                    weight = it.weight,
+                    timeStamp = it.timeStamp
+                )
+            })
+        }
+    }
 
 
     fun onEvent(event: HomeScreenUIEvent) {
@@ -22,7 +50,28 @@ class HomeScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             HomeScreenUIEvent.OnSubmit -> {
-
+                viewModelScope.launch {
+                    insertVitalsUseCase.invoke(
+                        heartRate = uiState.heartRate.text,
+                        bloodPressure = uiState.bloodPressure.text,
+                        weight = uiState.weight.text,
+                        babyKicks = uiState.babyKicks.text
+                    )
+                }
+                uiState = uiState.copy(
+                    vitalsList = uiState.vitalsList + VitalsLog(
+                        heartRate = uiState.heartRate.text,
+                        bloodPressure = uiState.bloodPressure.text,
+                        babyKicks = uiState.babyKicks.text,
+                        weight = uiState.weight.text,
+                        timeStamp = getCurrentFormattedTime()
+                    ),
+                    heartRate = TextFieldValue(),
+                    bloodPressure = TextFieldValue(),
+                    babyKicks = TextFieldValue(),
+                    weight = TextFieldValue(),
+                    showDialog = false
+                )
             }
 
             is HomeScreenUIEvent.OnBabyKicksChange -> {
@@ -46,6 +95,12 @@ class HomeScreenViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
+
+    private fun getCurrentFormattedTime(): String {
+        val date = Date()
+        val formatter = SimpleDateFormat("EEE, dd MMM yyyy hh:mm a", Locale.getDefault())
+        return formatter.format(date)
+    }
 }
 
 
@@ -57,7 +112,10 @@ data class HomeScreenUiState(
     val timeStamp: String = "",
     val vitalsList: List<VitalsLog> = emptyList(),
     val showDialog: Boolean = false,
-)
+) {
+    fun isEnabled() = heartRate.text.isNotEmpty() && babyKicks.text.isNotEmpty()
+            && bloodPressure.text.isNotEmpty() && weight.text.isNotEmpty()
+}
 
 
 data class VitalsLog(

@@ -1,11 +1,15 @@
 package com.samridhi.vitalstrackerapp.presentation.home
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,6 +33,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +71,21 @@ import com.samridhi.vitalstrackerapp.ui.theme.purple8
 fun HomeScreen(
     viewModel: HomeScreenViewModel = hiltViewModel(),
 ) {
+    val permissionGranted = remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        permissionGranted.value = isGranted
+    }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            permissionGranted.value = true
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -131,29 +152,34 @@ fun HomeScreenContent(
     LazyColumn(
         modifier = modifier
     ) {
-        items(2) {
-            HealthStats()
+        items(uiState.vitalsList) {
+            HealthStats(data = it)
         }
     }
 }
 
 @Composable
-fun HealthStats() {
+fun HealthStats(
+    data: VitalsLog,
+) {
     Column(
         modifier = Modifier
-            .padding(12.dp)
+            .padding(8.dp)
             .fillMaxWidth()
-            .height(156.dp)
             .shadow(elevation = 8.dp, shape = RoundedCornerShape(8.dp))
             .background(color = purple7)
-            .padding(16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
                 Icon(
                     painter = painterResource(AppDrawable.heart_rate),
                     contentDescription = "Heart rate icon",
@@ -162,21 +188,21 @@ fun HealthStats() {
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "90 bpm",
+                    text = "${data.heartRate} bpm",
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     painter = painterResource(AppDrawable.blood_pressure),
                     contentDescription = "Blood pressure icon",
-                    tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "120/80 mmHg",
+                    text = "${data.bloodPressure} mmHg",
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -185,10 +211,13 @@ fun HealthStats() {
         Spacer(modifier = Modifier.size(20.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
-        ) {
+        )
+        {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(AppDrawable.scale),
@@ -198,12 +227,15 @@ fun HealthStats() {
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "68 kg",
+                    text = "${data.weight} kg",
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     painter = painterResource(AppDrawable.newborn),
                     contentDescription = "Baby kicks icon",
@@ -212,7 +244,7 @@ fun HealthStats() {
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     modifier = Modifier.padding(start = 4.dp),
-                    text = "15 kicks",
+                    text = "${data.babyKicks} kicks",
                     style = MaterialTheme.typography.ht1.copy(color = Color.Black, fontSize = 12.sp)
                 )
             }
@@ -221,13 +253,11 @@ fun HealthStats() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
-                .background(color = purple6)
-                .padding(vertical = 8.dp),
+                .background(color = purple6),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Mon, 13 Jan 2025 03:45 pm",
+                text = data.timeStamp,
                 color = Color.White
             )
         }
@@ -315,6 +345,7 @@ fun AddVitalsDialog(
             )
             Spacer(modifier = Modifier.size(40.dp))
             Button(
+                enabled = uiState.isEnabled(),
                 content = {
                     Text("Submit")
                 },
@@ -325,7 +356,7 @@ fun AddVitalsDialog(
                     .align(Alignment.CenterHorizontally),
                 colors = ButtonDefaults.buttonColors(containerColor = purple6),
                 onClick = {
-
+                    onEvent(HomeScreenUIEvent.OnSubmit)
                 }
             )
         }
@@ -375,11 +406,60 @@ fun Preview() {
 @Composable
 fun Preview2() {
     Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        //  HealthStats(vitals: VitalsLog)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+
+        ) {
+        HealthStats(
+            data = VitalsLog(
+                heartRate = "78",
+                bloodPressure = "120/80",
+                weight = "60",
+                babyKicks = "5",
+                timeStamp = "2025-08-01 10:00 AM"
+            )
+        )
+        HealthStats(
+            data = VitalsLog(
+                heartRate = "82",
+                bloodPressure = "118/76",
+                weight = "61",
+                babyKicks = "6",
+                timeStamp = "2025-08-01 02:30 PM"
+            )
+        )
+        HealthStats(
+            data = VitalsLog(
+                heartRate = "75",
+                bloodPressure = "115/75",
+                weight = "59.8",
+                babyKicks = "4",
+                timeStamp = "2025-07-31 09:45 AM"
+            )
+        )
+        HealthStats(
+            data = VitalsLog(
+                heartRate = "80",
+                bloodPressure = "122/81",
+                weight = "60.5",
+                babyKicks = "7",
+                timeStamp = "2025-07-30 06:20 PM"
+            )
+        )
+        HealthStats(
+            data = VitalsLog(
+                heartRate = "79",
+                bloodPressure = "117/78",
+                weight = "60.2",
+                babyKicks = "6",
+                timeStamp = "2025-07-29 11:00 AM"
+            )
+        )
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
